@@ -1,0 +1,48 @@
+name:           Download Genie Plugin
+version:        1.0
+id:             downloadgenie
+key:            DownloadGenie
+description:    A genie that grants you a download
+author_name:    "Jay Allen, Endevver LLC"
+author_link:    http://endevver.com/about/
+plugin_link:    http://endevver.com/download-genie/
+doc_link:       http://endevver.com/download-genie/docs
+
+config_settings:
+    StreamedFileBufferSize:
+        default: 8192
+    DownloaderScript:
+        default: download.cgi
+
+applications:
+    downloader:
+        handler: MT::App::Downloader
+        methods:
+            dispatch: $DownloadGenie::MT::App::Downloader::dispatch
+tags:
+    function:
+        AssetDownloadURL:
+            handler: $DownloadGenie::DownloadGenie::Tags::hdlr_asset_download_url
+
+callbacks:
+    dlg_protected_asset_filter:
+        code:       $DownloadGenie::DownloadGenie::Handler::Protection::is_public
+        priority:   11
+    dlg_authorization_filter:
+        code:       $DownloadGenie::DownloadGenie::Handler::Authorization::is_authorized
+        priority:   11
+    dlg_download_handler:
+        code:       $DownloadGenie::DownloadGenie::Handler::Download::handler
+        priority:   11
+
+# Flotsam and Jetsam
+#   static_version: 1
+#   schema_version: 1
+#   init_app: $DownloadGenie::DownloadGenie::init_app
+#   config_types:
+#       foo: 
+#           handler: $DownloadGenie::DownloadGenie::Config::foo
+#       bar: 
+#           handler: $DownloadGenie::DownloadGenie::Config::bar
+#       baz: 
+#           handler: $DownloadGenie::DownloadGenie::Config::baz
