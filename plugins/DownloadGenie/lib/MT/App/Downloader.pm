@@ -344,3 +344,6 @@ callback. The method checks to see whether an error was thrown and, if so,
 populates C<< $app->error() >> and returns it. A true value short-circuits the
 C<dispatch()> method so that the C<< $app->error >> can be returned to the client.
 
+=head1 TODO
+
+* Support conditional requests? ETag/If-None-Match
