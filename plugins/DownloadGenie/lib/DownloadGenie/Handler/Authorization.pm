@@ -7,13 +7,14 @@ use Data::Dumper;
 sub is_authorized {
     my ( $cb, $asset, $login_ref ) = @_;
     my $app = MT->instance;
+    my ( $session, $user ) = $app->get_commenter_session();
+    return 1 if $user && $session;
 
     my ($author) = $app->login;
-    if ( !$author || !$app->is_authorized ) {
-        $$login_ref = 1;
-        return 0;
-    }
-    return 1;
+    return 1 if $author and $app->is_authorized;
+    
+    $$login_ref = 1;
+    return 0;
 }
 
 1;
