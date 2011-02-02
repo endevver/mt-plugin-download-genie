@@ -30,7 +30,7 @@ sub mode_dispatch {
             "Asset ID [_1] not found", encode_html($asset_id)
         );
     # print STDERR Dumper( $asset );
-        
+
     # Check whether asset is public or protected. If public, then authorized
     defined( $is_public = $is_authorized = $app->asset_is_public( $asset ))
         or return;  # Undef means error occurred and $app->error is set
@@ -39,9 +39,9 @@ sub mode_dispatch {
     # Check whether request for a NON-public asset is authorized
     # This returns true or an error condition with $app->error set
     $is_authorized ||= $app->request_is_authorized( $asset )
-        or return;  
+        or return;
         # print STDERR "is_authorized: $is_authorized\n";
-    
+
     # Initiate the download for public or authorized requests
     return $app->start_download( $asset, {
         public     => $is_public,
@@ -74,7 +74,7 @@ sub request_is_authorized {
 sub start_download {
     my $app = shift;
     my ( $asset, $disposition ) = @_;
-    
+
     # SETUP COMMON DEFAULT HEADERS
     $app->add_default_headers( $asset );
 
@@ -93,7 +93,7 @@ sub download_handler {
     return $app->trans_error('No handler found for asset ID [_1]', $asset->id)
         unless defined $hdlr;
 
-    # Process non-"code reference" references to code (i.e. registry 
+    # Process non-"code reference" references to code (i.e. registry
     # component/package/method signatures)
     return $app->handler_to_coderef( $hdlr );
 }
@@ -105,8 +105,6 @@ sub filehandle_for_asset {
 
     # If we have a file path
     if ( 'SCALAR' eq ref \$filearg ) {
-
-        # It's a file path
         open( $fh, "<", $filearg )
           or die "Could not open file $filearg: $!";
           # || return $app->error( 'Could not open file [_1]: [_2]',
@@ -123,12 +121,12 @@ sub filehandle_for_asset {
 
     require FileHandle;
     bless $fh, "FileHandle";
-    
     return ( $fh, $basename );
 }
 
 sub add_default_headers {
-    my ( $app, $asset )   = @_;
+    my ( $app, $asset )  = @_;
+
     $app->{no_print_body} = 1;
 
     $app->response_content_type(
@@ -321,7 +319,7 @@ C<MT::handler_to_coderef>.
 =head2 $app->filehandle_for_asset( $file_path_or_handle )
 
 This method takes an argument which is either a file path or a filehandle and
-returns a Filehandle object opened for reading. Returns undef and an 
+returns a Filehandle object opened for reading. Returns undef and an
 C<< $app->error >> if the file could not be opened for any reason.
 
 =head2 $app->add_default_headers( $asset )
