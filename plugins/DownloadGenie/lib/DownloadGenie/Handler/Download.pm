@@ -14,11 +14,20 @@ sub handler {
 sub dispatch {
     my ( $app, $asset, $disposition ) = @_;
     my $bufsize                 = $app->config->StreamedFileBufferSize;
+
+    # Disable client-side caching of this file
+    $app->set_header( Pragma => 'no-cache' );
+    unless ( ($app->query->http('User-Agent')||'') =~ m{\bMSIE\b} ) {
+        # The following have been said to not play well with IE
+        $app->set_header( Expires => 0 );
+        $app->set_header( 
+            Cache_Control  => 'must-revalidate, post-check=0, pre-check=0' );
+    }
+
     my ( $fh, $basename )
         = eval { $app->filehandle_for_asset( $asset->file_path ) };
     # print STDERR "fh: $fh, basename: $basename\n";
 
-    $app->set_header( Pragma  => 'no-cache' );
     if ( ! grep { $app->get_header($_) }
                 qw( Content-Disposition attachment )) {
         $app->set_header( Content_Disposition =>
