@@ -58,16 +58,39 @@ sub asset_is_public {
 
 sub request_is_authorized {
     my ( $app, $asset ) = @_;
+    my $q = $app->query;
     my $login_required  = 0;
-    return 1 if $app->run_callbacks( 'dlg_authorization_filter',
-                                      $asset, \$login_required );
+
+    # Check for auth, return true immediately if it's OK
+    return 1
+        if $app->run_callbacks( 'dlg_authorization_filter',
+                                 $asset, \$login_required );
     return if $app->callback_error_thrown();
-    if ( $login_required ) {
+
+    # Something else happened but not sure what.  Deny access.
+    return $app->trans_error('Not authorized')
+        unless $login_required;
+
+    # User is not logged in.
+    # If we have a blog_id, use the comment script
+    if ( $asset->blog_id ) {
+        $app->return_args( $app->make_return_args );
+        return $app->redirect(
+                                  $app->mt_path
+                                . $app->config->CommentScript
+                                . $app->uri_params(
+                                    mode => 'login',
+                                    args => {
+                                        blog_id    => $asset->blog_id,
+                                        return_url => $app->return_uri,
+                                    }
+                                  )
+        );
+    }
+    # Otherwise, use the MT admin login screen
+    else {
         $app->{login_again} = 1;
         return 0;
-    }
-    else {
-        return $app->trans_error('Not authorized')
     }
 }
 
