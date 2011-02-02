@@ -133,6 +133,15 @@ sub add_default_headers {
         $asset->mime_type || $app->get_mime_type( $asset->file_path )
     );
 
+    # FILE DETAILS - Content-Length and Last-Modified
+    require HTTP::Date;
+    my ( $size, $mtime ) = (stat( $asset->file_path ))[7,9];
+    $app->set_header( 'Content-Length' => $size );
+    $app->set_header( 'Last-Modified'  => HTTP::Date::time2str($mtime) )
+        if $mtime;
+
+}
+
 sub get_mime_type {
     my ( $app, $file )     = @_;
     my $default            = 'application/octet-stream';
