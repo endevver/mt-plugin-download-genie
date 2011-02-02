@@ -13,7 +13,6 @@ sub handler {
 
 sub dispatch {
     my ( $app, $asset, $disposition ) = @_;
-    my $bufsize                 = $app->config->StreamedFileBufferSize;
 
     # Disable client-side caching of this file
     $app->set_header( Pragma => 'no-cache' );
@@ -26,19 +25,18 @@ sub dispatch {
 
     my ( $fh, $basename )
         = eval { $app->filehandle_for_asset( $asset->file_path ) };
-    # print STDERR "fh: $fh, basename: $basename\n";
 
-    if ( ! grep { $app->get_header($_) }
-                qw( Content-Disposition attachment )) {
-        $app->set_header( Content_Disposition =>
-                            'attachment; filename="'.$basename.'"');
-    } 
+    # This forces the file download for **all** files (html, txt, images, etc)
+    $app->set_header( Content_Disposition =>
+                        'attachment; filename="'.$basename.'"');
 
     # Send the finalized headers to the client prior to the content
+    #       print STDERR Dumper($app->{cgi_headers});
     $app->send_http_header();
 
     # Reset the file pointer
     seek( $fh, 0, 0 );
+    my $bufsize = $app->config->StreamedFileBufferSize;
     while ( read( $fh, my $buffer, $bufsize )) {
         $app->print( $buffer );
     }
