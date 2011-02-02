@@ -11,7 +11,7 @@ sub id { q( downloader ) }
 sub init {
     my $app = shift;
     $app->SUPER::init(@_) or return;
-    $app->{state_params} = [q( id )];
+    $app->{state_params} = [qw( id blog_id )];
     $app->{default_mode} = 'dispatch';
     $app->{is_admin}     = 0;   # Auth only necessary for protected downloads
     $app;
@@ -70,6 +70,8 @@ sub request_is_authorized {
     # Something else happened but not sure what.  Deny access.
     return $app->trans_error('Not authorized')
         unless $login_required;
+
+    # TODO Perhaps we should support a code reference in $login_required?
 
     # User is not logged in.
     # If we have a blog_id, use the comment script
