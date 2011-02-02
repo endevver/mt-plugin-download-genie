@@ -131,15 +131,22 @@ sub add_default_headers {
     my ( $app, $asset )   = @_;
     $app->{no_print_body} = 1;
 
+    $app->response_content_type(
+        $asset->mime_type || $app->get_mime_type( $asset->file_path )
+    );
+
+sub get_mime_type {
+    my ( $app, $file )     = @_;
+    my $default            = 'application/octet-stream';
     my $external_lib_error = "An non-fatal error occurred when trying "
          ."to determine the files MIME type using the [_1] module: ";
 
     my $lwp_mediatypes = sub {
         my $type = eval {
             require LWP::MediaTypes;
-            LWP::MediaTypes::guess_media_type( $asset->file_path );
+            LWP::MediaTypes::guess_media_type( $file );
         };
-        $@ and warn $app->translate( $external_lib_error, $@ );
+        $@ and warn $app->translate( $external_lib_error, 'LWP::MediaTypes' );
         return $type;
     };
 
@@ -147,25 +154,13 @@ sub add_default_headers {
         my $type = eval {
            require File::MMagic;
            my $magic  = File::MMagic->new();
-           $magic->checktype_filehandle( $asset->file_path );
+           $magic->checktype_filehandle( $file );
        };
-       $@ and warn $app->translate( $external_lib_error, @_ );
+       $@ and warn $app->translate( $external_lib_error, 'File::MMagic' );
        return $type;
     };
 
-    # MIME TYPE DETERMINATION
-    my $type = $asset->mime_type
-            || $lwp_mediatypes->()
-            || $file_mmagic->()
-            || 'application/octet-stream';
-    # print STDERR 'MIME TYPE: '."$type\n";
-
-    # CONTENT LENGTH - FILE SIZE
-    unless ( $app->get_header( 'Content-Length' ) ) {
-        $app->set_header( 'Content-Length'
-                            => ( stat( $asset->file_path ) )[7] );
-    }
-    
+    return( $lwp_mediatypes->() || $file_mmagic->() || $default );
 }
 
 sub callback_error_thrown {
