@@ -36,17 +36,14 @@ sub asset_stats {
     };
 
     my %terms = ();
+    $terms{created_by} = $q->param('author_id') if $q->param('author_id');
 
     # If looking at blog-level asset download stats, grab the blog ID
-    if ( eval $app->blog ) {
-        $terms{blog_id} = $app->blog->id;
-    }
-
-    $terms{created_by} = $q->param('author_id') if $q->param('author_id');
+    $terms{blog_id}    = $app->blog->id if eval { $app->blog };
 
     # If an asset ID is supplied, use it to load stats only for that asset.
     # Otherwise, load stats for all assets.
-    $terms{asset_id} = $q->param('id') if $q->param('id');
+    $terms{asset_id}   = $q->param('id') if $q->param('id');
 
     my %args = ( sort => 'created_on', direction => 'descend', );
 
@@ -167,37 +164,19 @@ sub asset_stats {
 
 sub author_asset_stats {
     my $app = shift;
-
     $app->param( 'author_id', $app->param('id') );
     $app->delete_param('id');
-
-    asset_stats($app);
+    asset_stats( $app );
 }
 
+# Only display the "View asset download statistics" Page Action if the
+# track_download_stats config option has been enabled.
 sub page_actions_condition {
-
-    # Only display the "View asset download statistics" Page Action if the
-    # track_download_stats config option has been enabled.
-
-    my $blog = MT->instance->blog;
-    if ( !$blog ) {
-
-        # If there is no blog object, we must be at the system level. Users
-        # should be able to see stats, though, so present the link.
-        return 1;
-    }
-
+    my $blog   = MT->instance->blog or return 1; # No blog context, show link
     my $plugin = MT->component('dlgeniestats');
-
-    # track_download_stats is enabled; show the link.
-    return 1
-      if $plugin->get_config_value(
-                                    'track_download_stats',
-                                    'blog:' . $blog->id
-      );
-
-    # track_download_stats is not enabled; don't show the link.
-    return 0;
+    my $track  =  $plugin->get_config_value( 'track_download_stats',
+                                             'blog:' . $blog->id );
+    return $track ? 1 : 0;
 } ## end sub page_actions_condition
 
 1;
