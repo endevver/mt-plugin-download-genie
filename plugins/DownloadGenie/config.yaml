@@ -1,5 +1,5 @@
 name:           Download Genie Plugin
-version:        1.0
+version:        1.0.1
 id:             downloadgenie
 key:            DownloadGenie
 description:    A genie that grants you a download
@@ -7,6 +7,8 @@ author_name:    "Jay Allen, Endevver LLC"
 author_link:    http://endevver.com/about/
 plugin_link:    http://endevver.com/download-genie/
 doc_link:       http://endevver.com/download-genie/docs
+schema_version: 1
+
 
 config_settings:
     StreamedFileBufferSize:
@@ -14,7 +16,20 @@ config_settings:
     DownloaderScript:
         default: download.cgi
 
+blog_config_template: config_template.mtml
+
+settings:
+    track_download_stats:
+        default: 0
+        scope: blog
+
 applications:
+    cms:
+        methods:
+            asset_stats:         $DownloadGenie::DownloadGenie::CMS::asset_stats
+            author_asset_stats:  $DownloadGenie::DownloadGenie::CMS::author_asset_stats
+            export_stats:        $DownloadGenie::DownloadGenie::Export::export
+            object_export_stats: $DownloadGenie::DownloadGenie::Export::selected_object_export
     downloader:
         handler: MT::App::Downloader
         methods:
@@ -35,14 +50,25 @@ callbacks:
         code:       $DownloadGenie::DownloadGenie::Handler::Download::handler
         priority:   11
 
-# Flotsam and Jetsam
-#   static_version: 1
-#   schema_version: 1
-#   init_app: $DownloadGenie::DownloadGenie::init_app
-#   config_types:
-#       foo: 
-#           handler: $DownloadGenie::DownloadGenie::Config::foo
-#       bar: 
-#           handler: $DownloadGenie::DownloadGenie::Config::bar
-#       baz: 
-#           handler: $DownloadGenie::DownloadGenie::Config::baz
+object_types:
+    dg_stats: 'DownloadGenie::Stats'
+
+page_actions:
+    asset:
+        asset_stats:
+            label:      'View asset download statistics'
+            permission: administer
+            mode:       asset_stats
+            condition:  $DownloadGenie::DownloadGenie::CMS::page_actions_condition
+    list_asset:
+        asset_stats:
+            label:      'View asset download statistics'
+            permission: administer
+            mode:       asset_stats
+            condition:  $DownloadGenie::DownloadGenie::CMS::page_actions_condition
+    author:
+        asset_stats:
+            label:      'View asset download statistics'
+            permission: administer
+            mode:       author_asset_stats
+            condition:  $DownloadGenie::DownloadGenie::CMS::page_actions_condition

@@ -1,0 +1,123 @@
+<mt:SetVar name="page_title" value="Asset Download Statistics">
+<mt:SetVarBlock name="html_head" append="1">
+    <script type="text/javascript"><!--
+        var tableSelect;
+        function init() {
+            tableSelect = new TC.TableSelect("dg_stats-listing-table");
+            tableSelect.rowSelect = true;
+        }
+        TC.attachLoadEvent(init);
+      --></script>
+</mt:SetVarBlock>
+
+<mt:SetVarBlock name="action_buttons">
+    <a href="javascript:void(0)"
+         onclick="doForMarkedInThisWindow(
+             getByID('dg_stats-listing-form'),
+             'stats', 'stats', 'id', 'export_stats'); 
+             return false;"
+         title="Export statistics to a CSV file">Export</a>
+</mt:SetVarBlock>
+
+<mt:SetVarBlock name="html_body_footer">
+    <mt:Include name="include/display_options.tmpl">
+</mt:SetVarBlock>
+
+<mt:Include name="include/header.tmpl">
+
+<div class="listing-filter">
+    <div class="listing-filter-inner inner pkg">
+        <div class="filter">
+            <div id="filter-title" class="filter-title">
+                Summary of <mt:Var name="summary_label">
+            </div>
+        </div>
+    </div>
+</div>
+
+<ul style="margin: 20px 0 10px 20px; list-style-type: disc;">
+    <li><mt:Var name="dl_hour"> downloads this hour.</li>
+    <li><mt:Var name="dl_day"> downloads today.</li>
+    <li><mt:Var name="dl_month"> downloads this month.</li>
+    <li><mt:Var name="dl_year"> downloads this year.</li>
+    <li><mt:Var name="dl_total"> total downloads.</li>
+</ul>
+
+<form method="post" action="<mt:Var name="script_url">" name="object_export" style="margin: 0 10px 10px">
+    <input type="hidden" name="__mode" value="object_export_stats" />
+    <input type="hidden" name="obj_type" value="<mt:Var name="obj_type">" />
+    <input type="hidden" name="obj_id" value="<mt:Var name="obj_id">" />
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <button
+                mt:mode="object_export_stats"
+                type="submit"
+                class="primary-button"
+                title="Export All">Export All</button>
+        </div>
+    </div>
+</form>
+
+
+<mtapp:Listing type="dg_stats" 
+    default="No download statistics could be found." 
+    empty_message="No download statistics could be found.">
+    <mt:If name="__first__">
+        <thead>
+            <tr>
+                <th class="cb">
+                    <input type="checkbox" id="select-all-checkbox" name="id-head" value="all" class="select" />
+                </th>
+                <th class="title">Asset Label</th>
+                <th class="author">Downloaded by Author</th>
+                <th class="date">Downloaded on Date</th>
+                <th class="source_url">Downloaded from URL</th>
+            </tr>
+        </thead>
+        <tbody>
+    </mt:If>
+            <tr class="<mt:If name="__odd__">odd<mt:Else>even</mt:If>">
+                <td class="cb">
+                    <input type="checkbox" name="id" value="<mt:Var name="id">" class="select" />
+                </td>
+                <td class="title">
+                    <a href="<mt:CGIPath><mt:AdminScript>?__mode=view&amp;_type=asset&amp;id=<mt:Var name="asset_id">&blog_id=<mt:Var name="blog_id">">
+                        <mt:Var name="label" remove_html="1">
+                    </a>
+                </td>
+                <td class="author">
+                    <mt:Var name="author">
+                </td>
+                <td class="date">
+                    <span title="<mt:Var name="created_on_time_formatted">">
+                        <mt:If name="created_on_relative">
+                            <mt:If name="dates_relative">
+                                <mt:Var name="created_on_relative">
+                            <mt:Else>
+                                <mt:Var name="created_on_formatted">
+                            </mt:If>
+                        <mt:Else>
+                                <mt:Var name="created_on_formatted">
+                        </mt:If>
+                    </span>
+                </td>
+                <td class="source_url">
+                    <a href="<mt:Var name="source_url">" title="View source" target="_blank">
+                        <mt:Ignore>
+                            If the source URL is really long, chop it down 
+                            so that it doesn't cause a funny line break or 
+                            squish the other columns.
+                        </mt:Ignore>
+                        <mt:Var name="source_url" count_characters="1" setvar="chars">
+                        <mt:If name="chars" gt="65">
+                            <mt:Var name="source_url" regex_replace="/^(.{20}).*(.{35})$/",'$1 ... $2'>
+                        <mt:Else>
+                            <mt:Var name="source_url">
+                        </mt:If>
+                    </a>
+                </td>
+            </tr>
+</mtapp:listing>
+
+<mt:Include name="include/footer.tmpl">
