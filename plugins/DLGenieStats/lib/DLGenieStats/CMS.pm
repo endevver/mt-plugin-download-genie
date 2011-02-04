@@ -1,4 +1,4 @@
-package DownloadGenie::CMS;
+package DLGenieStats::CMS;
 
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ use MT::Util qw( format_ts relative_date epoch2ts );
 sub asset_stats {
     my $app    = shift;
     my $q      = $app->query;
-    my $plugin = MT->component('downloadgenie');
+    my $plugin = MT->component('dlgeniestats');
 
     # The dg_stats table data is being processed here.
     my $code = sub {
@@ -187,7 +187,7 @@ sub page_actions_condition {
         return 1;
     }
     
-    my $plugin = MT->component('downloadgenie');
+    my $plugin = MT->component('dlgeniestats');
     
     # track_download_stats is enabled; show the link.
     return 1 if $plugin->get_config_value('track_download_stats', 'blog:'.$blog->id);

@@ -2,39 +2,11 @@ package DownloadGenie::Handler::Download;
 
 use strict;
 use warnings;
-use DownloadGenie::Stats;
 use Data::Dumper;
 $| = 1;
 
 sub handler {
     my ( $cb, $asset, $disposition, $hdlr_ref ) = @_;
-
-    # Record this download only if the admin has enabled tracking.
-    my $plugin = MT->component('downloadgenie');
-    if ( $plugin->get_config_value('track_download_stats', 'blog:'.$asset->blog_id) ) {
-
-        # Record this download. Because the DownloadGenie::Stats object
-        # does the "audit" tracking, the date/time are automatically
-        # recorded, so we don't have to worry about that.
-        my $record = DownloadGenie::Stats->new();
-        $record->asset_id( $asset->id      );
-        $record->blog_id(  $asset->blog_id );
-        
-        # In order to record the author ID, get the commenter session.
-        # Since the commenter/author has already logged in, this should 
-        # always succeed. (Right?)
-        my $app = MT->instance;
-        my ( $session, $user ) = $app->get_commenter_session();
-        $record->created_by( $user->id ) if $user;
-
-        # Record the URL to the page that the user clicked to download from.
-        my $url = $ENV{'HTTP_REFERER'};
-        $record->source_url( $url );
-
-        $record->save;
-    }
-
-    # Lastly, send the user the file they want to download
     return defined $$hdlr_ref ? $$hdlr_ref
                               : ( $$hdlr_ref = \&dispatch );
 }

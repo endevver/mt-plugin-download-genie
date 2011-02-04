@@ -1,0 +1,54 @@
+name:           Download Genie Statistics
+version:        1.0
+id:             dlgeniestats
+key:            DLGenieStats
+description:    A statistics tracker plugin for the Download Genie framework
+author_name:    "Dan Wolfgang, Endevver LLC"
+author_link:    http://endevver.com/about/
+plugin_link:    http://endevver.com/download-genie/
+doc_link:       http://endevver.com/download-genie/docs
+schema_version: 1
+
+
+blog_config_template: config_template.mtml
+
+settings:
+    track_download_stats:
+        default: 0
+        scope: blog
+
+applications:
+    cms:
+        methods:
+            asset_stats:         $DLGenieStats::DLGenieStats::CMS::asset_stats
+            author_asset_stats:  $DLGenieStats::DLGenieStats::CMS::author_asset_stats
+            export_stats:        $DLGenieStats::DLGenieStats::Export::export
+            object_export_stats: $DLGenieStats::DLGenieStats::Export::selected_object_export
+
+callbacks:
+    dlg_download_handler:
+        code:       $DLGenieStats::DownloadGenie::Handler::Download::Statistics::record
+        priority:   10
+
+object_types:
+    dg_stats: DownloadGenie::Stats
+
+page_actions:
+    asset:
+        asset_stats:
+            label:      'View asset download statistics'
+            permission: administer
+            mode:       asset_stats
+            condition:  $DLGenieStats::DLGenieStats::CMS::page_actions_condition
+    list_asset:
+        asset_stats:
+            label:      'View asset download statistics'
+            permission: administer
+            mode:       asset_stats
+            condition:  $DLGenieStats::DLGenieStats::CMS::page_actions_condition
+    author:
+        asset_stats:
+            label:      'View asset download statistics'
+            permission: administer
+            mode:       author_asset_stats
+            condition:  $DLGenieStats::DLGenieStats::CMS::page_actions_condition
