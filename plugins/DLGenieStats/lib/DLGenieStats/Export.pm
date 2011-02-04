@@ -5,35 +5,36 @@ use warnings;
 use base qw( MT::App );
 use DownloadGenie::Stats;
 use MT::Util qw( format_ts relative_date epoch2ts );
+use Carp qw( croak confess );
 
 use Text::CSV;
 my $csv = Text::CSV->new( { eol => "\n", binary => 1, } );
 
+# Users may want to export all records with an associated asset, blog,
+# or author.
 sub selected_object_export {
-
-    # Users may want to export all records with an associated asset, blog,
-    # or author.
-    my $app = shift;
-    my $q   = $app->query;
+    my $app      = shift;
+    my $q        = $app->query;
+    my $obj_type = $q->param('obj_type');
+    my $obj_id   = $q->param('obj_id')
+        or confess
+            $app->translate("No obj_id provided to selected_object_export");
 
     # Determine which type of object we want to collect.
-    my $obj_type = $q->param('obj_type');
-    if ( $obj_type eq 'blog' ) {
-        $obj_type = 'blog_id';
+    $obj_key  = $obj_type eq 'blog'   ? 'blog_id'
+              : $obj_type eq 'asset'  ? 'asset_id'
+              : $obj_type eq 'author' ? 'created_by'
+                                      :  undef;
+    unless ( $obj_key ) {
+        confess $app->translate(
+            'Undefined key for object type [_1] in load', $obj_type )
     }
-    elsif ( $obj_type eq 'asset' ) {
-        $obj_type = 'asset_id';
-    }
-    elsif ( $obj_type eq 'author' ) {
-        $obj_type = 'created_by';
-    }
-
-    my $obj_id = $q->param('obj_id');
 
     # Load the stats and grab just the rows needed.
-    my $iter = MT->model('dg_stats')->load_iter( { $obj_type => $obj_id }, );
-
     my @stat_rows;
+    my $stats_class = MT->model('dg_stats');
+    my $iter        = $stats_class->load_iter({ $obj_key => $obj_id })
+        or croak 'load_iter error: '.$stats_class->errstr;
     while ( my $stats = $iter->() ) {
         push @stat_rows, $stats->id;
     }
