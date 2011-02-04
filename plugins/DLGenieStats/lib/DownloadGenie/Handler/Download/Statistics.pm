@@ -24,6 +24,10 @@ sub record {
     # In order to record the author ID, get the commenter session.
     # Since the commenter/author has already logged in, this should
     # always succeed. (Right?)
+    # FIXME You can't assume that the auth module will produce a commenter
+    #   Could be an MT author with no commenter session
+    #   If it would be helpful, I can add a method to Download Genie to
+    #   produce the user if that would be helpful
     my ( $session, $user ) = $app->get_commenter_session();
     $record->created_by( $user->id ) if $user;
 
@@ -31,7 +35,7 @@ sub record {
     my $url = $ENV{'HTTP_REFERER'};
     $record->source_url($url);
 
-    $record->save;
+    $record->save;  # FIXME No error checking????
 } ## end sub record
 
 
