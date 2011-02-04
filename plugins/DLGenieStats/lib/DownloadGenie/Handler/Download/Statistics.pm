@@ -1,11 +1,12 @@
 package DownloadGenie::Handler::Download::Statistics
 
-  use strict;
+use strict;
 use warnings;
 use DownloadGenie::Stats;
 
 sub record {
     my ( $cb, $asset, $disposition, $hdlr_ref ) = @_;
+    my $app    = MT->instance;
     my $plugin = MT->component('dlgeniestats');
 
     # Record this download only if the admin has enabled tracking.
@@ -23,7 +24,6 @@ sub record {
     # In order to record the author ID, get the commenter session.
     # Since the commenter/author has already logged in, this should
     # always succeed. (Right?)
-    my $app = MT->instance;
     my ( $session, $user ) = $app->get_commenter_session();
     $record->created_by( $user->id ) if $user;
 
