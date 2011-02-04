@@ -1,6 +1,6 @@
 package DownloadGenie::Handler::Download::Statistics
 
-use strict;
+  use strict;
 use warnings;
 use DownloadGenie::Stats;
 
@@ -9,18 +9,19 @@ sub record {
     my $plugin = MT->component('dlgeniestats');
 
     # Record this download only if the admin has enabled tracking.
-    return unless $plugin->get_config_value('track_download_stats',
-                                            'blog:'.$asset->blog_id);
+    return
+      unless $plugin->get_config_value( 'track_download_stats',
+                                        'blog:' . $asset->blog_id );
 
     # Record this download. Because the DownloadGenie::Stats object
     # does the "audit" tracking, the date/time are automatically
     # recorded, so we don't have to worry about that.
     my $record = DownloadGenie::Stats->new();
-    $record->asset_id( $asset->id      );
-    $record->blog_id(  $asset->blog_id );
-    
+    $record->asset_id( $asset->id );
+    $record->blog_id( $asset->blog_id );
+
     # In order to record the author ID, get the commenter session.
-    # Since the commenter/author has already logged in, this should 
+    # Since the commenter/author has already logged in, this should
     # always succeed. (Right?)
     my $app = MT->instance;
     my ( $session, $user ) = $app->get_commenter_session();
@@ -28,10 +29,10 @@ sub record {
 
     # Record the URL to the page that the user clicked to download from.
     my $url = $ENV{'HTTP_REFERER'};
-    $record->source_url( $url );
+    $record->source_url($url);
 
     $record->save;
-}
+} ## end sub record
 
 
 1;

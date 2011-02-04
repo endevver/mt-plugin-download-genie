@@ -7,8 +7,7 @@ $| = 1;
 
 sub handler {
     my ( $cb, $asset, $disposition, $hdlr_ref ) = @_;
-    return defined $$hdlr_ref ? $$hdlr_ref
-                              : ( $$hdlr_ref = \&dispatch );
+    return defined $$hdlr_ref ? $$hdlr_ref : ( $$hdlr_ref = \&dispatch );
 }
 
 sub dispatch {
@@ -16,19 +15,20 @@ sub dispatch {
 
     # Disable client-side caching of this file
     $app->set_header( Pragma => 'no-cache' );
-    unless ( ($app->query->http('User-Agent')||'') =~ m{\bMSIE\b} ) {
+    unless ( ( $app->query->http('User-Agent') || '' ) =~ m{\bMSIE\b} ) {
+
         # The following have been said to not play well with IE
         $app->set_header( Expires => 0 );
-        $app->set_header( 
-            Cache_Control  => 'must-revalidate, post-check=0, pre-check=0' );
+        $app->set_header(
+              Cache_Control => 'must-revalidate, post-check=0, pre-check=0' );
     }
 
     my ( $fh, $basename )
-        = eval { $app->filehandle_for_asset( $asset->file_path ) };
+      = eval { $app->filehandle_for_asset( $asset->file_path ) };
 
     # This forces the file download for **all** files (html, txt, images, etc)
-    $app->set_header( Content_Disposition =>
-                        'attachment; filename="'.$basename.'"');
+    $app->set_header(
+          Content_Disposition => 'attachment; filename="' . $basename . '"' );
 
     # Send the finalized headers to the client prior to the content
     #       print STDERR Dumper($app->{cgi_headers});
@@ -37,13 +37,13 @@ sub dispatch {
     # Reset the file pointer
     seek( $fh, 0, 0 );
     my $bufsize = $app->config->StreamedFileBufferSize;
-    while ( read( $fh, my $buffer, $bufsize )) {
-        $app->print( $buffer );
+    while ( read( $fh, my $buffer, $bufsize ) ) {
+        $app->print($buffer);
     }
     $app->print('');    # print a null string at the end
     close($fh);
     return;
-} ## end sub stream_file
+} ## end sub dispatch
 
 1;
 

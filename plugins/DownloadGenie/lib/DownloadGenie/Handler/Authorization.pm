@@ -12,7 +12,7 @@ sub is_authorized {
 
     my ($author) = $app->login;
     return 1 if $author and $app->is_authorized;
-    
+
     $$login_ref = 1;
     return 0;
 }

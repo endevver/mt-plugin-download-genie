@@ -7,7 +7,7 @@ use Data::Dumper;
 sub is_public {
     my ( $cb, $asset ) = @_;
     my @tags = $asset->tags or return 0;
-    return grep { /public/i } @tags;
+    return grep {/public/i} @tags;
 }
 
 1;

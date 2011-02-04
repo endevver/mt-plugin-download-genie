@@ -6,14 +6,14 @@ use base qw( MT::App );
 use Data::Dumper;
 use MT::Util qw(encode_html);
 
-sub id { q( downloader ) }
+sub id {q( downloader )}
 
 sub init {
     my $app = shift;
     $app->SUPER::init(@_) or return;
     $app->{state_params} = [qw( id blog_id )];
     $app->{default_mode} = 'dispatch';
-    $app->{is_admin}     = 0;   # Auth only necessary for protected downloads
+    $app->{is_admin} = 0;    # Auth only necessary for protected downloads
     $app;
 }
 
@@ -21,55 +21,59 @@ sub mode_dispatch {
     my $app      = shift;
     my $q        = $app->query;
     my $asset_id = $q->param('id')
-        or return $app->trans_error("No asset specified in request");
+      or return $app->trans_error("No asset specified in request");
     my ( $is_public, $is_authorized );
 
     # Load asset
-    my ( $asset ) = $app->model('asset')->load( $asset_id )
-        or return $app->trans_error(
-            "Asset ID [_1] not found", encode_html($asset_id)
-        );
+    my ($asset) = $app->model('asset')->load($asset_id)
+      or return $app->trans_error( "Asset ID [_1] not found",
+                                   encode_html($asset_id) );
+
     # print STDERR Dumper( $asset );
 
     # Check whether asset is public or protected. If public, then authorized
-    defined( $is_public = $is_authorized = $app->asset_is_public( $asset ))
-        or return;  # Undef means error occurred and $app->error is set
-    # print STDERR "is_public: $is_public\n";
+    defined( $is_public = $is_authorized = $app->asset_is_public($asset) )
+      or return;    # Undef means error occurred and $app->error is set
+                    # print STDERR "is_public: $is_public\n";
 
     # Check whether request for a NON-public asset is authorized
     # This returns true or an error condition with $app->error set
-    $is_authorized ||= $app->request_is_authorized( $asset )
-        or return;
-        # print STDERR "is_authorized: $is_authorized\n";
+    $is_authorized ||= $app->request_is_authorized($asset) or return;
+
+    # print STDERR "is_authorized: $is_authorized\n";
 
     # Initiate the download for public or authorized requests
-    return $app->start_download( $asset, {
-        public     => $is_public,
-        authorized => $is_authorized
-    });
-} ## end sub mode_default
+    return
+      $app->start_download(
+                            $asset,
+                            {
+                               public     => $is_public,
+                               authorized => $is_authorized
+                            }
+      );
+} ## end sub mode_dispatch
 
 sub asset_is_public {
     my ( $app, $asset ) = @_;
-    my $is_public = $app->run_callbacks('dlg_protected_asset_filter', $asset);
+    my $is_public
+      = $app->run_callbacks( 'dlg_protected_asset_filter', $asset );
     return if $app->callback_error_thrown();
     return $is_public ? 1 : 0;
 }
 
 sub request_is_authorized {
     my ( $app, $asset ) = @_;
-    my $q = $app->query;
-    my $login_required  = 0;
+    my $q              = $app->query;
+    my $login_required = 0;
 
     # Check for auth, return true immediately if it's OK
     return 1
-        if $app->run_callbacks( 'dlg_authorization_filter',
-                                 $asset, \$login_required );
+      if $app->run_callbacks( 'dlg_authorization_filter', $asset,
+                              \$login_required );
     return if $app->callback_error_thrown();
 
     # Something else happened but not sure what.  Deny access.
-    return $app->trans_error('Not authorized')
-        unless $login_required;
+    return $app->trans_error('Not authorized') unless $login_required;
 
     # TODO Perhaps we should support a code reference in $login_required?
 
@@ -77,33 +81,35 @@ sub request_is_authorized {
     # If we have a blog_id, use the comment script
     if ( $asset->blog_id ) {
         $app->return_args( $app->make_return_args );
-        return $app->redirect(
-                                  $app->mt_path
-                                . $app->config->CommentScript
-                                . $app->uri_params(
-                                    mode => 'login',
-                                    args => {
-                                        blog_id    => $asset->blog_id,
-                                        return_url => $app->return_uri,
-                                    }
-                                  )
-        );
+        return
+          $app->redirect(
+                              $app->mt_path 
+                            . $app->config->CommentScript
+                            . $app->uri_params(
+                                           mode => 'login',
+                                           args => {
+                                               blog_id    => $asset->blog_id,
+                                               return_url => $app->return_uri,
+                                           }
+                            )
+          );
     }
+
     # Otherwise, use the MT admin login screen
     else {
         $app->{login_again} = 1;
         return 0;
     }
-}
+} ## end sub request_is_authorized
 
 sub start_download {
     my $app = shift;
     my ( $asset, $disposition ) = @_;
 
     # SETUP COMMON DEFAULT HEADERS
-    $app->add_default_headers( $asset );
+    $app->add_default_headers($asset);
 
-    my $hdlr = $app->download_handler( @_ ) or return;
+    my $hdlr = $app->download_handler(@_) or return;
     return $hdlr->( $app, @_ );
 }
 
@@ -113,14 +119,15 @@ sub download_handler {
 
     # Run the download handler callback.  One handler should provide
     # a handler function in the $hdlr reference
-    $app->run_callbacks( 'dlg_download_handler', @_, \(my $hdlr) );
+    $app->run_callbacks( 'dlg_download_handler', @_, \( my $hdlr ) );
     return undef if $app->callback_error_thrown();
-    return $app->trans_error('No handler found for asset ID [_1]', $asset->id)
-        unless defined $hdlr;
+    return $app->trans_error( 'No handler found for asset ID [_1]',
+                              $asset->id )
+      unless defined $hdlr;
 
     # Process non-"code reference" references to code (i.e. registry
     # component/package/method signatures)
-    return $app->handler_to_coderef( $hdlr );
+    return $app->handler_to_coderef($hdlr);
 }
 
 sub filehandle_for_asset {
@@ -130,14 +137,15 @@ sub filehandle_for_asset {
 
     # If we have a file path
     if ( 'SCALAR' eq ref \$filearg ) {
-        open( $fh, "<", $filearg )
-          or die "Could not open file $filearg: $!";
-          # || return $app->error( 'Could not open file [_1]: [_2]',
-          #                        $filearg, $! );
+        open( $fh, "<", $filearg ) or die "Could not open file $filearg: $!";
+
+        # || return $app->error( 'Could not open file [_1]: [_2]',
+        #                        $filearg, $! );
         binmode $fh;
         require File::Basename;
-        $basename = File::Basename::basename( $filearg );
+        $basename = File::Basename::basename($filearg);
     }
+
     # It's a file handle.
     else {
         $fh       = $filearg;
@@ -147,36 +155,35 @@ sub filehandle_for_asset {
     require FileHandle;
     bless $fh, "FileHandle";
     return ( $fh, $basename );
-}
+} ## end sub filehandle_for_asset
 
 sub add_default_headers {
-    my ( $app, $asset )  = @_;
+    my ( $app, $asset ) = @_;
 
     $app->{no_print_body} = 1;
 
-    $app->response_content_type(
-        $asset->mime_type || $app->get_mime_type( $asset->file_path )
-    );
+    $app->response_content_type(   $asset->mime_type
+                                || $app->get_mime_type( $asset->file_path ) );
 
     # FILE DETAILS - Content-Length and Last-Modified
     require HTTP::Date;
-    my ( $size, $mtime ) = (stat( $asset->file_path ))[7,9];
+    my ( $size, $mtime ) = ( stat( $asset->file_path ) )[ 7, 9 ];
     $app->set_header( 'Content-Length' => $size );
     $app->set_header( 'Last-Modified'  => HTTP::Date::time2str($mtime) )
-        if $mtime;
+      if $mtime;
 
 }
 
 sub get_mime_type {
-    my ( $app, $file )     = @_;
+    my ( $app, $file ) = @_;
     my $default            = 'application/octet-stream';
     my $external_lib_error = "An non-fatal error occurred when trying "
-         ."to determine the files MIME type using the [_1] module: ";
+      . "to determine the files MIME type using the [_1] module: ";
 
     my $lwp_mediatypes = sub {
         my $type = eval {
             require LWP::MediaTypes;
-            LWP::MediaTypes::guess_media_type( $file );
+            LWP::MediaTypes::guess_media_type($file);
         };
         $@ and warn $app->translate( $external_lib_error, 'LWP::MediaTypes' );
         return $type;
@@ -184,23 +191,23 @@ sub get_mime_type {
 
     my $file_mmagic = sub {
         my $type = eval {
-           require File::MMagic;
-           my $magic  = File::MMagic->new();
-           $magic->checktype_filehandle( $file );
-       };
-       $@ and warn $app->translate( $external_lib_error, 'File::MMagic' );
-       return $type;
+            require File::MMagic;
+            my $magic = File::MMagic->new();
+            $magic->checktype_filehandle($file);
+        };
+        $@ and warn $app->translate( $external_lib_error, 'File::MMagic' );
+        return $type;
     };
 
-    return( $lwp_mediatypes->() || $file_mmagic->() || $default );
-}
+    return ( $lwp_mediatypes->() || $file_mmagic->() || $default );
+} ## end sub get_mime_type
 
 sub callback_error_thrown {
     my $app = shift;
     my $err = $app->callback_errstr();
     return ( defined($err) and $err ne '' )
-                ? ! $app->error( $err ) # Opposite of undef is true.
-                : undef;                # Definitely false.
+      ? !$app->error($err)    # Opposite of undef is true.
+      : undef;                # Definitely false.
 }
 
 1;

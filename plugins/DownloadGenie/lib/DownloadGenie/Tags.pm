@@ -6,30 +6,30 @@ use Data::Dumper;
 
 sub hdlr_asset_download_url {
     my ( $ctx, $args ) = @_;
-    my $a      = $ctx->stash('asset') or return $ctx->_no_asset_error();
-    my $app    = MT->instance;
-    my $cfg    = $app->config;
+    my $a   = $ctx->stash('asset') or return $ctx->_no_asset_error();
+    my $app = MT->instance;
+    my $cfg = $app->config;
 
     require MT::Util;
-    my $url    = MT::Util::caturl(
-        $cfg->CGIPath,
-        $app->component('DownloadGenie')->envelope,
-        $cfg->DownloaderScript.'?id='.$a->id,
+    my $url = MT::Util::caturl(
+                                $cfg->CGIPath,
+                                $app->component('DownloadGenie')->envelope,
+                                $cfg->DownloaderScript . '?id=' . $a->id,
     );
-    print STDERR Dumper({ 'DOWNLOAD URL' => $url });
+    print STDERR Dumper( { 'DOWNLOAD URL' => $url } );
     return $url;
 }
 
 # sub relativize_url {
 #     my ( $ctx, $blog, $db_url ) = @_;
 #     return $db_url if defined $db_url and $db_url =~ m{^\%[ras]};
-# 
+#
 #     my @root_urls = (
 #         { 'r' => $blog->site_url            },
 #         { 'a' => $blog->archive_url         },
 #         { 's' => MT->instance->static_path  },
 #     );
-# 
+#
 #     my ( $root_url, $format );
 #     foreach my $map ( @root_urls ) {
 #         my ($fmt, $root) = each %$map;
@@ -38,14 +38,14 @@ sub hdlr_asset_download_url {
 #         $format = $fmt;
 #         last;
 #     }
-# 
+#
 #     if ( ! $root_url or ! $format ) {
 #         return $ctx->trans_error(
 #           'Could not determine root asset url for [_1] in '
 #         . '[_2]', $db_url, $ctx->this_tag
 #         )
 #     }
-# 
+#
 #     $db_url =~ s{$root_url}{\%$format};
 #     return $db_url;
 # }
