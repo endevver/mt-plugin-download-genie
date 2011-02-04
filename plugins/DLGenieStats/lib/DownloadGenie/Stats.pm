@@ -18,11 +18,11 @@ __PACKAGE__->install_properties( {
 );
 
 sub class_label {
-    MT->translate("Stats");
+    MT->translate("Download Statistics");
 }
 
 sub class_label_plural {
-    MT->translate("Stats");
+    MT->translate("Download Statistics");
 }
 
 1;
