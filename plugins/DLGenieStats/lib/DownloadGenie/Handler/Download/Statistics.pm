@@ -1,4 +1,4 @@
-package DownloadGenie::Handler::Download::Statistics
+package DownloadGenie::Handler::Download::Statistics;
 
 use strict;
 use warnings;
