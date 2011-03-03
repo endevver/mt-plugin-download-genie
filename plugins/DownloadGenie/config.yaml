@@ -1,5 +1,5 @@
-name:           Download Genie Plugin
-version:        1.0
+name:           Download Genie
+version:        1.0.2
 id:             downloadgenie
 key:            DownloadGenie
 description:    A genie that grants you a download
