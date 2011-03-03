@@ -1,4 +1,4 @@
-package DownloadGenie::Handler::Download::Statistics
+package DownloadGenie::Handler::Download::Statistics;
 
 use strict;
 use warnings;
@@ -35,7 +35,7 @@ sub record {
     my $url = $ENV{'HTTP_REFERER'};
     $record->source_url($url);
 
-    $record->save;  # FIXME No error checking????
+    $record->save or die $record->errstr;
 } ## end sub record
 
 

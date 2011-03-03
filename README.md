@@ -14,15 +14,14 @@ commenting) to have permission to download an asset.
 # Installation #
 
 The latest version of the plugin can be downloaded from the its
-[Github repo][] which is now part of the Open Melody user account.
-[Packaged downloads][] are also available if you prefer.
+[Github repo][]. [Packaged downloads][] are also available if you prefer.
 
 Installation follows the [standard plugin installation][] procedures.
 
 [Github repo]:
-   http://github.com/openmelody/mt-plugin-configassistant
+   https://github.com/endevver/mt-plugin-download-genie
 [Packaged downloads]:
-   http://github.com/openmelody/mt-plugin-configassistant/downloads
+   https://github.com/endevver/mt-plugin-download-genie/downloads
 [Standard plugin installation]:
    http://tinyurl.com/easy-plugin-install
 
@@ -30,8 +29,8 @@ Installation follows the [standard plugin installation][] procedures.
 
 ## AssetDownloadURL ##
 
-Use the tag `<mt:AssetDownloadURL>` in place of the mt:AssetURL tag for assets
-that may require protection. This tag produces the Download Genie
+Use the tag `<mt:AssetDownloadURL>` in place of the `<mt:AssetURL>` tag for 
+assets that may require protection. This tag produces the Download Genie
 DownloaderScript URL with a single query string 'id' equal to the asset ID of
 the asset in context.
 
@@ -85,10 +84,11 @@ functionality. Refer to the MT::App::Downloader POD for more details.
 
 # Known Issues and Caveats #
 
-* If adding Download Genie to an existing site, note that changing `AssetURL`
-  tags to `AssetDownloadURL` only obscures the asset URL; it does not change
-  the location of the original asset. Example: if a user has bookmarked an
-  asset based on an `AssetURL`, that bookmark will continue to work.
+* If adding Download Genie to an existing site, note that changing 
+  `<mt:AssetURL>` tags to `<mt:AssetDownloadURL>` only obscures the asset URL;
+  it does not change the location of the original asset. Example: if a user 
+  has bookmarked an asset based on an `<mt:AssetURL>`, that bookmark will 
+  continue to work.
 
 * When inserting an asset into the Entry Body and Extended fields the
   `AssetURL` is used to create the inserted HTML, meaning it is an unprotected
