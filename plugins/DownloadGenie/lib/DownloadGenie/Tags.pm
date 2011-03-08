@@ -16,7 +16,7 @@ sub hdlr_asset_download_url {
                                 $app->component('DownloadGenie')->envelope,
                                 $cfg->DownloaderScript . '?id=' . $a->id,
     );
-    print STDERR Dumper( { 'DOWNLOAD URL' => $url } );
+    #print STDERR Dumper( { 'DOWNLOAD URL' => $url } );
     return $url;
 }
 
